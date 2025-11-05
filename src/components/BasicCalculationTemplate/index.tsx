@@ -159,6 +159,8 @@ const BasicCalculationTemplate = (props: IBasicCalculationTemplateProps) => {
                             templateId={activeTemplate.id}
                             basicId={id}
                             rowIndex={i - 0.5}
+                            operandsBasicId={operandsBasicId}
+                            digitsInOperands={operandsDigitsInRow}
                         />
                     )}
                     <CalculationRow

@@ -46,6 +46,11 @@
       background-color: #e8f5e9;
     }
 
+    &_incorrect {
+      border-color: #f44336;
+      background-color: #ffebee;
+    }
+
     &_offset {
       opacity: 0;
       height: 0;

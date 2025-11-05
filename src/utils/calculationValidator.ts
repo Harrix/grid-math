@@ -104,6 +104,95 @@ export const calculateCorrectResult = (
     }
 };
 
+export const getHelperRowValue = (
+    values: { [key: string]: string },
+    templateId: string,
+    basicId: string,
+    rowIndex: number,
+    digitsInRow: number,
+): number => {
+    let numberString = "";
+    for (let i = 0; i < digitsInRow; i++) {
+        const key = getCellKey({
+            templateId,
+            basicId,
+            rowIndex,
+            cellIndex: i,
+            rowType: "helper",
+        });
+        const digit = values[key] || "0";
+        numberString += digit;
+    }
+    const result = parseInt(numberString, 10) || 0;
+    console.log(`getHelperRowValue: row ${rowIndex}, string "${numberString}" = ${result}`);
+    return result;
+};
+
+export const isHelperRowCorrect = (
+    values: { [key: string]: string },
+    templateId: string,
+    operandsBasicId: string,
+    helperBasicId: string,
+    helperRowIndex: number,
+    digitsInOperands: number,
+    digitsInHelperRow: number,
+): boolean => {
+    // Проверяем заполненность helper row (слева могут быть пустые)
+    let firstFilledIndex = -1;
+    let hasEmptyAfterFilled = false;
+
+    for (let i = 0; i < digitsInHelperRow; i++) {
+        const key = getCellKey({
+            templateId,
+            basicId: helperBasicId,
+            rowIndex: helperRowIndex,
+            cellIndex: i,
+            rowType: "helper",
+        });
+        const cellValue = values[key];
+        const isFilled = cellValue && cellValue.trim() !== "";
+
+        if (isFilled && firstFilledIndex === -1) {
+            firstFilledIndex = i;
+        }
+
+        if (firstFilledIndex !== -1 && !isFilled) {
+            hasEmptyAfterFilled = true;
+            break;
+        }
+    }
+
+    if (firstFilledIndex === -1 || hasEmptyAfterFilled) {
+        return false;
+    }
+
+    // Читаем множители
+    const firstNumber = getNumberFromCells(values, templateId, operandsBasicId, 0, digitsInOperands);
+    const secondNumber = getNumberFromCells(values, templateId, operandsBasicId, 1, digitsInOperands);
+
+    // Определяем, какая это строка промежуточного результата (0, 1, 2...)
+    // helperRowIndex может быть -0.5, 0.5, 1.5, 2.5...
+    // -0.5 -> строка 0 (первая helper row)
+    // 0.5 -> строка 1 (вторая helper row, если isHelperCalculation)
+    // 1.5 -> строка 2
+    const helperLineNumber = Math.floor(helperRowIndex + 0.5);
+
+    // Получаем цифру второго числа для этой строки (справа налево)
+    const secondNumberStr = secondNumber.toString().padStart(digitsInOperands, "0");
+    const digitIndex = secondNumberStr.length - 1 - helperLineNumber;
+    const digit = parseInt(secondNumberStr[digitIndex]) || 0;
+
+    // Правильное промежуточное значение
+    const correctValue = firstNumber * digit;
+
+    // Введенное пользователем значение
+    const userValue = getHelperRowValue(values, templateId, helperBasicId, helperRowIndex, digitsInHelperRow);
+
+    console.log(`Helper row ${helperRowIndex} (line ${helperLineNumber}): ${firstNumber} × ${digit} = ${correctValue}, user = ${userValue}`);
+
+    return correctValue === userValue;
+};
+
 export const isResultCorrect = (
     values: { [key: string]: string },
     templateId: string,

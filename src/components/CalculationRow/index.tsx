@@ -5,7 +5,7 @@ import CalculationCell, { CellType } from "../CalculationCell/CalculationCell";
 import { useTypedSelector } from "../../hooks/useTypedSelector";
 import { useActions } from "../../hooks/useActions";
 import { BasicOperationType } from "../BasicCalculationTemplate";
-import { isResultCorrect, CellIdentifier } from "../../utils/calculationValidator";
+import { isResultCorrect, isHelperRowCorrect, CellIdentifier } from "../../utils/calculationValidator";
 
 export type RowType = "number" | "helper" | "result";
 
@@ -160,10 +160,63 @@ const CalculationRow = (props: ICalculationRowProps) => {
 
             return result;
         }
+
+        if (
+            rowType === "helper" &&
+            templateId &&
+            basicId &&
+            operandsBasicId &&
+            typeof rowIndex === "number" &&
+            typeof digitsInOperands === "number"
+        ) {
+            const result = isHelperRowCorrect(
+                cellValues.values,
+                templateId,
+                operandsBasicId,
+                basicId,
+                rowIndex,
+                digitsInOperands,
+                digitsInRow,
+            );
+
+            return result;
+        }
+
+        return false;
+    };
+
+    const checkIfCellIsIncorrect = (): boolean => {
+        if (
+            rowType === "helper" &&
+            templateId &&
+            basicId &&
+            operandsBasicId &&
+            typeof rowIndex === "number" &&
+            typeof digitsInOperands === "number"
+        ) {
+            // Проверяем, что ячейки заполнены
+            let hasFilledCells = false;
+            for (let i = 0; i < digitsInRow; i++) {
+                const key = `${templateId}-${basicId}-${rowIndex}-${i}-helper`;
+                if (cellValues.values[key] && cellValues.values[key].trim() !== "") {
+                    hasFilledCells = true;
+                    break;
+                }
+            }
+
+            if (!hasFilledCells) {
+                return false;
+            }
+
+            // Если заполнены, но неправильно
+            return !checkIfCellIsCorrect();
+        }
+
         return false;
     };
 
     const isCellCorrect = checkIfCellIsCorrect();
+    const isCellIncorrect = checkIfCellIsIncorrect();
 
     return (
         <div className={classNames("calculationRow", className)} onKeyDown={onKeyUp}>
@@ -191,6 +244,7 @@ const CalculationRow = (props: ICalculationRowProps) => {
                         }}
                         cellIdentifier={cellIdentifier}
                         isCorrect={isCellCorrect}
+                        isIncorrect={isCellIncorrect}
                     />
                 );
             })}

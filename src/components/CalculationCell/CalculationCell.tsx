@@ -15,6 +15,7 @@ interface ICalculationCellProps {
     focusNextCell: (moveTo: "right" | "left") => void;
     cellIdentifier?: CellIdentifier;
     isCorrect?: boolean;
+    isIncorrect?: boolean;
 }
 
 const CalculationCell = (props: ICalculationCellProps) => {
@@ -26,6 +27,7 @@ const CalculationCell = (props: ICalculationCellProps) => {
         autoFocusMove,
         cellIdentifier,
         isCorrect = false,
+        isIncorrect = false,
     } = props;
     const inputRef = useRef<HTMLInputElement>(null);
     const { paintMode } = useTypedSelector((state) => state.settings);
@@ -127,7 +129,8 @@ const CalculationCell = (props: ICalculationCellProps) => {
                 ["calculationRow__cell_offset"]: cellType === "offset",
                 ["calculationRow__cell_paintMode"]: paintMode && cellType !== "helper",
                 ["calculationRow__cell_painted"]: isPainted && cellType !== "helper",
-                ["calculationRow__cell_correct"]: isCorrect && cellType === "result",
+                ["calculationRow__cell_correct"]: isCorrect && (cellType === "result" || cellType === "helper"),
+                ["calculationRow__cell_incorrect"]: isIncorrect && (cellType === "result" || cellType === "helper"),
             })}
         />
     );

@@ -98,6 +98,7 @@ const BasicCalculationTemplate = (props: IBasicCalculationTemplateProps) => {
     };
 
     if (operation === "division-result") {
+        const { activeTemplate } = useTypedSelector((state) => state.controll);
         return (
             <div className="template__division-right-side">
                 <CalculationRow
@@ -108,6 +109,13 @@ const BasicCalculationTemplate = (props: IBasicCalculationTemplateProps) => {
                     focusNextRow={moveFocusToNextRow}
                     onMoveToSide={onMoveToSide}
                     autoFocusMove="right"
+                    templateId={activeTemplate.id}
+                    basicId={id}
+                    rowIndex={0}
+                    operation={operation}
+                    calculatedNumbersCount={calculatedNumbersCount}
+                    digitsInResult={digitsInRow}
+                    resultRowIndex={1}
                 />
                 <div className="template__division-divide-line"></div>
                 <CalculationRow
@@ -118,10 +126,20 @@ const BasicCalculationTemplate = (props: IBasicCalculationTemplateProps) => {
                     focusNextRow={moveFocusToNextRow}
                     onMoveToSide={onMoveToSide}
                     autoFocusMove="right"
+                    templateId={activeTemplate.id}
+                    basicId={id}
+                    rowIndex={1}
+                    operation={operation}
+                    calculatedNumbersCount={calculatedNumbersCount}
+                    digitsInResult={digitsInRow}
+                    resultRowIndex={1}
+                    digitsInOperands={digitsInRow}
                 />
             </div>
         );
     }
+
+    const { activeTemplate } = useTypedSelector((state) => state.controll);
 
     return (
         <div className="template__calculation">
@@ -136,6 +154,9 @@ const BasicCalculationTemplate = (props: IBasicCalculationTemplateProps) => {
                             setRowFocused={() => onRowClick(i - 0.5)}
                             focusNextRow={moveFocusToNextRow}
                             onMoveToSide={onMoveToSide}
+                            templateId={activeTemplate.id}
+                            basicId={id}
+                            rowIndex={i - 0.5}
                         />
                     )}
                     <CalculationRow
@@ -155,6 +176,13 @@ const BasicCalculationTemplate = (props: IBasicCalculationTemplateProps) => {
                         setRowFocused={() => onRowClick(i)}
                         focusNextRow={moveFocusToNextRow}
                         onMoveToSide={onMoveToSide}
+                        templateId={activeTemplate.id}
+                        basicId={id}
+                        rowIndex={i}
+                        operation={operation}
+                        calculatedNumbersCount={calculatedNumbersCount}
+                        digitsInResult={digitsInResult}
+                        resultRowIndex={i + 1}
                     />
                     {i === 0 && (
                         <div
@@ -174,6 +202,14 @@ const BasicCalculationTemplate = (props: IBasicCalculationTemplateProps) => {
                             setRowFocused={() => onRowClick(i + 1)}
                             focusNextRow={moveFocusToNextRow}
                             onMoveToSide={onMoveToSide}
+                            templateId={activeTemplate.id}
+                            basicId={id}
+                            rowIndex={i + 1}
+                            operation={operation}
+                            calculatedNumbersCount={calculatedNumbersCount}
+                            digitsInResult={digitsInResult}
+                            resultRowIndex={i + 1}
+                            digitsInOperands={digitsInRow}
                         />
                     )}
                 </div>

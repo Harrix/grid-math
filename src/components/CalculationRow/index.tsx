@@ -4,6 +4,8 @@ import classNames from "classnames";
 import CalculationCell, { CellType } from "../CalculationCell/CalculationCell";
 import { useTypedSelector } from "../../hooks/useTypedSelector";
 import { useActions } from "../../hooks/useActions";
+import { BasicOperationType } from "../BasicCalculationTemplate";
+import { isResultCorrect, CellIdentifier } from "../../utils/calculationValidator";
 
 export type RowType = "number" | "helper" | "result";
 
@@ -17,6 +19,14 @@ interface ICalculationRowProps {
     setRowFocused: () => void;
     focusNextRow: (moveFocus: "up" | "down") => void;
     onMoveToSide?: (side: "right" | "left") => void;
+    templateId?: string;
+    basicId?: string;
+    rowIndex?: number;
+    operation?: BasicOperationType;
+    calculatedNumbersCount?: number;
+    digitsInResult?: number;
+    resultRowIndex?: number;
+    digitsInOperands?: number;
 }
 
 const CalculationRow = (props: ICalculationRowProps) => {
@@ -30,11 +40,20 @@ const CalculationRow = (props: ICalculationRowProps) => {
         setRowFocused,
         focusNextRow,
         onMoveToSide,
+        templateId,
+        basicId,
+        rowIndex,
+        operation,
+        calculatedNumbersCount,
+        digitsInResult,
+        resultRowIndex,
+        digitsInOperands,
     } = props;
     const rowCellsCount = digitsInRow + offsetCells;
     const { setActiveCell, setActiveRowLength } = useActions();
 
     const { activeCell, activeRowLength } = useTypedSelector((state) => state.controll);
+    const cellValues = useTypedSelector((state) => state.cellValues);
 
     const onRowClick = () => {
         if (!isFocusedRow) setRowFocused();
@@ -99,20 +118,78 @@ const CalculationRow = (props: ICalculationRowProps) => {
             return "offset";
         return rowType;
     };
+
+    const checkIfCellIsCorrect = (): boolean => {
+        if (
+            rowType === "result" &&
+            templateId &&
+            basicId &&
+            operation &&
+            typeof calculatedNumbersCount === "number" &&
+            typeof digitsInResult === "number" &&
+            typeof resultRowIndex === "number" &&
+            typeof digitsInOperands === "number"
+        ) {
+            const result = isResultCorrect(
+                cellValues.values,
+                templateId,
+                basicId,
+                operation,
+                digitsInOperands,
+                digitsInResult,
+                calculatedNumbersCount,
+                resultRowIndex,
+            );
+
+            // Временное логирование для отладки
+            if (Object.keys(cellValues.values).length > 0) {
+                console.log('Checking result:', {
+                    templateId,
+                    basicId,
+                    resultRowIndex,
+                    digitsInOperands,
+                    digitsInResult,
+                    cellValues: cellValues.values,
+                    isCorrect: result
+                });
+            }
+
+            return result;
+        }
+        return false;
+    };
+
+    const isCellCorrect = checkIfCellIsCorrect();
+
     return (
         <div className={classNames("calculationRow", className)} onKeyDown={onKeyUp}>
-            {[...Array(rowCellsCount)].map((e, i) => (
-                <CalculationCell
-                    key={i}
-                    autoFocusMove={autoFocusMove}
-                    cellType={getCellType(i)}
-                    isFocused={i === activeCell && isFocusedRow}
-                    focusNextCell={focuseNextCell}
-                    onCellEnter={() => {
-                        onCellClick(i);
-                    }}
-                />
-            ))}
+            {[...Array(rowCellsCount)].map((e, i) => {
+                const cellIdentifier: CellIdentifier | undefined =
+                    templateId && basicId && typeof rowIndex === "number"
+                        ? {
+                              templateId,
+                              basicId,
+                              rowIndex,
+                              cellIndex: i,
+                              rowType,
+                          }
+                        : undefined;
+
+                return (
+                    <CalculationCell
+                        key={i}
+                        autoFocusMove={autoFocusMove}
+                        cellType={getCellType(i)}
+                        isFocused={i === activeCell && isFocusedRow}
+                        focusNextCell={focuseNextCell}
+                        onCellEnter={() => {
+                            onCellClick(i);
+                        }}
+                        cellIdentifier={cellIdentifier}
+                        isCorrect={isCellCorrect}
+                    />
+                );
+            })}
         </div>
     );
 };

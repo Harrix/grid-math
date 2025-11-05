@@ -1,7 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import classNames from "classnames";
 import { useTypedSelector } from "../../hooks/useTypedSelector";
+import { useActions } from "../../hooks/useActions";
 import { RowType } from "../CalculationRow";
+import { CellIdentifier } from "../../utils/calculationValidator";
 
 export type CellType = RowType | "offset";
 
@@ -11,15 +13,38 @@ interface ICalculationCellProps {
     autoFocusMove: "left" | "right";
     onCellEnter: () => void;
     focusNextCell: (moveTo: "right" | "left") => void;
+    cellIdentifier?: CellIdentifier;
+    isCorrect?: boolean;
 }
 
 const CalculationCell = (props: ICalculationCellProps) => {
-    const { isFocused = false, onCellEnter, focusNextCell, cellType, autoFocusMove } = props;
+    const {
+        isFocused = false,
+        onCellEnter,
+        focusNextCell,
+        cellType,
+        autoFocusMove,
+        cellIdentifier,
+        isCorrect = false,
+    } = props;
     const inputRef = useRef<HTMLInputElement>(null);
     const { paintMode } = useTypedSelector((state) => state.settings);
+    const cellValues = useTypedSelector((state) => state.cellValues);
+    const { setCellValue } = useActions();
     const [isPainted, setIsPainted] = useState(false);
 
     const maxLength = cellType === "helper" ? 2 : 1;
+
+    // Загружаем сохраненное значение при монтировании
+    useEffect(() => {
+        if (inputRef.current && cellIdentifier) {
+            const key = `${cellIdentifier.templateId}-${cellIdentifier.basicId}-${cellIdentifier.rowIndex}-${cellIdentifier.cellIndex}-${cellIdentifier.rowType}`;
+            const savedValue = cellValues.values[key];
+            if (savedValue) {
+                inputRef.current.value = savedValue;
+            }
+        }
+    }, []);
 
     useEffect(() => {
         if (isFocused) {
@@ -31,6 +56,13 @@ const CalculationCell = (props: ICalculationCellProps) => {
     const onInput = () => {
         if (!inputRef.current) return;
         const value = inputRef.current.value;
+
+        // Сохраняем значение в store
+        if (cellIdentifier) {
+            const key = `${cellIdentifier.templateId}-${cellIdentifier.basicId}-${cellIdentifier.rowIndex}-${cellIdentifier.cellIndex}-${cellIdentifier.rowType}`;
+            setCellValue(key, value);
+        }
+
         if (!value || !value.trim()) return;
         /* Uncomment if autofocus after input not needed
         if (!isCorrectValue(value)) {
@@ -95,6 +127,7 @@ const CalculationCell = (props: ICalculationCellProps) => {
                 ["calculationRow__cell_offset"]: cellType === "offset",
                 ["calculationRow__cell_paintMode"]: paintMode && cellType !== "helper",
                 ["calculationRow__cell_painted"]: isPainted && cellType !== "helper",
+                ["calculationRow__cell_correct"]: isCorrect && cellType === "result",
             })}
         />
     );

@@ -27,6 +27,7 @@ interface ICalculationRowProps {
     digitsInResult?: number;
     resultRowIndex?: number;
     digitsInOperands?: number;
+    operandsBasicId?: string;
 }
 
 const CalculationRow = (props: ICalculationRowProps) => {
@@ -48,6 +49,7 @@ const CalculationRow = (props: ICalculationRowProps) => {
         digitsInResult,
         resultRowIndex,
         digitsInOperands,
+        operandsBasicId,
     } = props;
     const rowCellsCount = digitsInRow + offsetCells;
     const { setActiveCell, setActiveRowLength } = useActions();
@@ -133,12 +135,13 @@ const CalculationRow = (props: ICalculationRowProps) => {
             const result = isResultCorrect(
                 cellValues.values,
                 templateId,
-                basicId,
+                operandsBasicId || basicId,
                 operation,
                 digitsInOperands,
                 digitsInResult,
                 calculatedNumbersCount,
                 resultRowIndex,
+                basicId,
             );
 
             // Временное логирование для отладки
@@ -146,6 +149,7 @@ const CalculationRow = (props: ICalculationRowProps) => {
                 console.log('Checking result:', {
                     templateId,
                     basicId,
+                    operandsBasicId,
                     resultRowIndex,
                     digitsInOperands,
                     digitsInResult,

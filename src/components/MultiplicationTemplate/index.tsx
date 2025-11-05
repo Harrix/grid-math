@@ -12,13 +12,22 @@ const MultiplicationTemplate = (props: IMultiplicationTemplateProps) => {
 
     return (
         <div className="template">
-            {template.basics.map((basic, i) => (
-                <BasicCalculationTemplate
-                    basic={basic}
-                    key={basic.id}
-                    basicIndex={i}
-                />
-            ))}
+            {template.basics.map((basic, i) => {
+                const isMultiplicationResult = i === 1;
+                const multiplicationProps = isMultiplicationResult ? {
+                    operandsBasicId: template.basics[0].id,
+                    operandsDigitsInRow: template.basics[0].digitsInRow,
+                } : {};
+
+                return (
+                    <BasicCalculationTemplate
+                        basic={basic}
+                        key={basic.id}
+                        basicIndex={i}
+                        {...multiplicationProps}
+                    />
+                );
+            })}
         </div>
     );
 };

@@ -107,13 +107,15 @@ export const calculateCorrectResult = (
 export const isResultCorrect = (
     values: { [key: string]: string },
     templateId: string,
-    basicId: string,
+    operandsBasicId: string,
     operation: BasicOperationType,
     digitsInRow: number,
     digitsInResult: number,
     calculatedNumbersCount: number,
     resultRowIndex: number,
+    resultBasicId?: string,
 ): boolean => {
+    const actualResultBasicId = resultBasicId || operandsBasicId;
     // Проверяем правильность заполнения:
     // - Можно оставлять пустыми ячейки слева (ведущие нули)
     // - Нельзя оставлять пустыми ячейки справа от первой заполненной
@@ -125,7 +127,7 @@ export const isResultCorrect = (
     for (let i = 0; i < digitsInResult; i++) {
         const key = getCellKey({
             templateId,
-            basicId,
+            basicId: actualResultBasicId,
             rowIndex: resultRowIndex,
             cellIndex: i,
             rowType: "result",
@@ -153,7 +155,7 @@ export const isResultCorrect = (
     const correctResult = calculateCorrectResult(
         values,
         templateId,
-        basicId,
+        operandsBasicId,
         operation,
         digitsInRow,
         calculatedNumbersCount,
@@ -162,7 +164,7 @@ export const isResultCorrect = (
     const userResult = getResultFromCells(
         values,
         templateId,
-        basicId,
+        actualResultBasicId,
         resultRowIndex,
         digitsInResult,
     );

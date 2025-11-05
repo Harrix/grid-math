@@ -22,6 +22,8 @@ interface IBasicCalculationTemplateProps {
     basic: IBasic;
     basicIndex: number;
     onMoveToSide?: (side: "right" | "left") => void;
+    operandsBasicId?: string;
+    operandsDigitsInRow?: number;
 }
 
 export const getTemplateSymbol = (operation: BasicOperationType | TemplateOperationType) => {
@@ -40,7 +42,7 @@ export const getTemplateSymbol = (operation: BasicOperationType | TemplateOperat
 };
 
 const BasicCalculationTemplate = (props: IBasicCalculationTemplateProps) => {
-    const { basic, basicIndex, onMoveToSide } = props;
+    const { basic, basicIndex, onMoveToSide, operandsBasicId, operandsDigitsInRow } = props;
 
     const {
         id,
@@ -205,11 +207,12 @@ const BasicCalculationTemplate = (props: IBasicCalculationTemplateProps) => {
                             templateId={activeTemplate.id}
                             basicId={id}
                             rowIndex={i + 1}
-                            operation={operation}
-                            calculatedNumbersCount={calculatedNumbersCount}
+                            operation={isHelperCalculation && operandsBasicId ? "multiplication" : operation}
+                            calculatedNumbersCount={2}
                             digitsInResult={digitsInResult}
                             resultRowIndex={i + 1}
-                            digitsInOperands={digitsInRow}
+                            digitsInOperands={operandsDigitsInRow || digitsInRow}
+                            operandsBasicId={operandsBasicId}
                         />
                     )}
                 </div>
